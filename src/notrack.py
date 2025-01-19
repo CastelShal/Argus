@@ -6,13 +6,14 @@ import numpy as np
 import mediapipe as mp
 import random
 import time
+import keras_facenet
 from person import Person
 from imgUtils import draw_rect, get_bbox, rgb_pre_processing
 
 mp_face_detection = mp.solutions.face_detection
 detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
 
-# embedder = keras_facenet.FaceNet()
+embedder = keras_facenet.FaceNet()
 face_db = []
 this_frame = []
 person_id = 0
@@ -50,11 +51,13 @@ def process_camera_feed(camera):
           bounding = get_bbox(det, w, h)
           if bounding is not None:
             xmin, ymin, width, height = get_bbox(det, w, h)
-          #   roi = rgb[ymin: ymin+height, xmin:xmin+width]
-          #   imgs.append(roi)
+            roi = rgb[ymin: ymin+height, xmin:xmin+width]
+            imgs.append(roi)
             rect = (xmin, ymin, xmin + width, ymin + height)
-            this_frame.append(find_or_store_face(rect))
-      cleanup_face_db()
+            bboxes.append(rect)
+      # cleanup_face_db()
+      if len(imgs) > 0:
+        process_similarity(bboxes, imgs)
 
       for person in this_frame:
         draw_rect(frame, person.bbox, color=person.color)
@@ -67,38 +70,46 @@ def process_camera_feed(camera):
   cv2.destroyWindow(f"Camera {camera}")
   print(f"Camera feed {camera} terminated.")
 
-def find_or_store_face(bbox):
-  global face_db;
-  global person_id;
-  
+def get_min_dist(embed):
+  threshold = 0.3
+  global face_db
+  candid = None
+  min_dist = threshold
   for person in face_db:
-    dist = euclidean_distance(person.bbox, bbox)
-    if dist < 25 and person.time - time.time() < 0.5:
-      person.bbox = bbox
-      person.reset()
-      return person
-    elif dist < 60:
-        person.bbox = bbox
-        person.reset()
-        return person
+    dist = embedder.compute_distance(person.embedding, embed)
+    print(dist)
+    if min_dist > dist:
+        min_dist = dist
+        candid = person
+  return (candid if min_dist < threshold else None)
 
-  else:
-    person = Person(person_id, bbox, (random.randint(0, 255), random.randint(0,255), random.randint(0, 255)))
-    person_id += 1
-    face_db.append(person)
-    return person
+def process_similarity(bboxes, imgs):
+  global face_db
+  global person_id
+  global embedder
+  global this_frame
+  embeddings = embedder.embeddings(imgs)
+  for bbox, embed in zip(bboxes, embeddings):
+    candid = get_min_dist(embed)
+    print(candid)
+    if candid is not None:
+      candid.embedding = embed
+      candid.bbox = bbox
+      candid.reset()
+      this_frame.append(candid)
+    else:
+      person = Person( person_id, bbox, embed, (random.randint(0, 255), random.randint(0,255), random.randint(0, 255)) )
+      person_id += 1
+      face_db.append(person)
+      this_frame.append(person)
 
-def euclidean_distance(box1, box2):
-    center1 = ((box1[0] + box1[2]) / 2, (box1[1] + box1[3]) / 2)
-    center2 = ((box2[0] + box2[2]) / 2, (box2[1] + box2[3]) / 2)
-    return np.linalg.norm(np.array(center1) - np.array(center2))
 
 def cleanup_face_db():
    for person in face_db:
       if time.time() - person.time > 1.5:
          face_db.remove(person)
 
-def find_faces_or_store(face_embeds, bboxes):
+def find_faces_or_store( face_embeds, bboxes ):
   '''
   Checks a face against all the faces in the db. If not found, stores it in. Returns a bbox, color pair.
   '''
@@ -116,5 +127,5 @@ def find_faces_or_store(face_embeds, bboxes):
       res.append(new_face["color"])
   return zip(bboxes, res)
 
-process_camera_feed("../videos/ppl.mp4")
+process_camera_feed("../videos/peopleTest.m4v")
 # process_camera_feed("http://192.168.0.105:8080/video")

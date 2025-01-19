@@ -1,2 +1,4 @@
 argus_env
-videos/
+src/training
+src/__pycache__
+videos
