@@ -35,8 +35,8 @@ def process_camera_feed(camera):
           print(f"Failed to grab frame from camera {camera}")
           break
       
-      rgb = rgb_pre_processing(frame)
-      # rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+      # rgb = rgb_pre_processing(frame)
+      rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
       bboxes.clear()
       imgs.clear()
       this_frame.clear()
