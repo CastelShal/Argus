@@ -3,16 +3,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import cv2
 from numpy import linalg as la
 import numpy as np
-import mediapipe as mp
 import random
 import time
 import keras_facenet
 from person import Person
-from imgUtils import draw_rect, get_bbox, rgb_pre_processing
+from imgUtils import draw_rect
+from mp_face_detector import MediaPipeDetector
 
-mp_face_detection = mp.solutions.face_detection
-detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
-
+detector = MediaPipeDetector()
 embedder = keras_facenet.FaceNet()
 face_db = []
 this_frame = []
@@ -28,7 +26,6 @@ def process_camera_feed(camera):
 
   bboxes = []
   imgs = []
-
   while True:
       ret, frame = cap.read()
       if not ret:
@@ -41,26 +38,20 @@ def process_camera_feed(camera):
       imgs.clear()
       this_frame.clear()
 
-      faces = detector.process(rgb)
-      h,w = rgb.shape[:2]
-      if faces.detections is not None:
-        for det in faces.detections:
-          if det.score[0] < .7:
-              continue
-          
-          bounding = get_bbox(det, w, h)
-          if bounding is not None:
-            xmin, ymin, width, height = get_bbox(det, w, h)
-            roi = rgb[ymin: ymin+height, xmin:xmin+width]
-            imgs.append(roi)
-            rect = (xmin, ymin, xmin + width, ymin + height)
-            bboxes.append(rect)
+      faces = detector.detectFaces(rgb, 0.75)
+      if faces is not None:
+        for bbox in faces:
+          x0, y0, x1, y1 = bbox
+          roi = rgb[y0:y1, x0:x1]
+          imgs.append(roi)
+          rect = (x0, y0, x1, y1)
+          bboxes.append(rect)
       # cleanup_face_db()
-      if len(imgs) > 0:
-        process_similarity(bboxes, imgs)
+      # if len(imgs) > 0:
+      #   process_similarity(bboxes, imgs)
 
-      for person in this_frame:
-        draw_rect(frame, person.bbox, color=person.color)
+      for bbox in bboxes:
+        draw_rect(frame, bbox)
       cv2.imshow(f"Camera {camera}", frame)
 
       if cv2.waitKey(5) & 0xFF == ord('q'):
@@ -103,7 +94,6 @@ def process_similarity(bboxes, imgs):
       face_db.append(person)
       this_frame.append(person)
 
-
 def cleanup_face_db():
    for person in face_db:
       if time.time() - person.time > 1.5:
@@ -127,5 +117,5 @@ def find_faces_or_store( face_embeds, bboxes ):
       res.append(new_face["color"])
   return zip(bboxes, res)
 
-process_camera_feed("../videos/peopleTest.m4v")
+process_camera_feed("videos/peopleTest.m4v")
 # process_camera_feed("http://192.168.0.105:8080/video")
