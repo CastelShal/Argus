@@ -24,18 +24,3 @@ pprint.PrettyPrinter().pprint(training_df)
 with open("op.json", "w") as file:
     json.dump(training_df, file)
 
-# import cv2
-# from imgUtils import rgb_pre_processing, draw_rect
-# from keras_facenet import FaceNet
-# embedder = FaceNet()
-
-# img = cv2.imread("jeff.jpeg")
-# rgb = rgb_pre_processing(img)
-
-# embed = embedder.extract(img, 0.8)
-# box = embed[0]['box']
-# box[2] += box[0]
-# box[3] += box[1]
-# draw_rect(img, box)
-# cv2.imwrite("processed.jpeg", img)
-# print(embed)

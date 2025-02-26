@@ -1,22 +1,15 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import cv2
-from numpy import linalg as la
-import numpy as np
-import random
-import time
 import keras_facenet
-from person import Person
 from imgUtils import draw_rect
 from mp_face_detector import MediaPipeDetector
+from dlib_face_detector import DlibFaceDetector
+from mtcnn_det import MTCNNDetector
 
-detector = MediaPipeDetector()
+detector = DlibFaceDetector()
 embedder = keras_facenet.FaceNet()
-face_db = []
-this_frame = []
-person_id = 0
 
-# Function to process frames from a single camera feed
 def process_camera_feed(camera):
   global detector
   cap = cv2.VideoCapture(camera)
@@ -31,91 +24,31 @@ def process_camera_feed(camera):
       if not ret:
           print(f"Failed to grab frame from camera {camera}")
           break
-      
-      # rgb = rgb_pre_processing(frame)
-      rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+          
+      # rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+      # rgb = cv2.resize(rgb, (rgb.shape[1] // 2, rgb.shape[0] // 2))
       bboxes.clear()
       imgs.clear()
-      this_frame.clear()
 
-      faces = detector.detectFaces(rgb, 0.75)
+      faces = detector.detectFaces(frame, 0.75)
       if faces is not None:
         for bbox in faces:
           x0, y0, x1, y1 = bbox
-          roi = rgb[y0:y1, x0:x1]
+          roi = frame[y0:y1, x0:x1]
           imgs.append(roi)
           rect = (x0, y0, x1, y1)
           bboxes.append(rect)
-      # cleanup_face_db()
-      # if len(imgs) > 0:
-      #   process_similarity(bboxes, imgs)
 
       for bbox in bboxes:
         draw_rect(frame, bbox)
       cv2.imshow(f"Camera {camera}", frame)
 
-      if cv2.waitKey(5) & 0xFF == ord('q'):
+      if cv2.waitKey(1) & 0xFF == ord('q'):
           break
 
   cap.release()
   cv2.destroyWindow(f"Camera {camera}")
   print(f"Camera feed {camera} terminated.")
 
-def get_min_dist(embed):
-  threshold = 0.3
-  global face_db
-  candid = None
-  min_dist = threshold
-  for person in face_db:
-    dist = embedder.compute_distance(person.embedding, embed)
-    print(dist)
-    if min_dist > dist:
-        min_dist = dist
-        candid = person
-  return (candid if min_dist < threshold else None)
-
-def process_similarity(bboxes, imgs):
-  global face_db
-  global person_id
-  global embedder
-  global this_frame
-  embeddings = embedder.embeddings(imgs)
-  for bbox, embed in zip(bboxes, embeddings):
-    candid = get_min_dist(embed)
-    print(candid)
-    if candid is not None:
-      candid.embedding = embed
-      candid.bbox = bbox
-      candid.reset()
-      this_frame.append(candid)
-    else:
-      person = Person( person_id, bbox, embed, (random.randint(0, 255), random.randint(0,255), random.randint(0, 255)) )
-      person_id += 1
-      face_db.append(person)
-      this_frame.append(person)
-
-def cleanup_face_db():
-   for person in face_db:
-      if time.time() - person.time > 1.5:
-         face_db.remove(person)
-
-def find_faces_or_store( face_embeds, bboxes ):
-  '''
-  Checks a face against all the faces in the db. If not found, stores it in. Returns a bbox, color pair.
-  '''
-  res = []  
-  for f_embed in face_embeds:
-    for embed in face_db:
-      distance = la.norm(np.array(f_embed) - embed["embed"])
-      if distance >= 0.2:
-        res.append(embed["color"])
-        break
-    else:
-      # print("new dude")
-      new_face = {"embed":np.array(f_embed), "color": (random.randint(0, 255), 0, random.randint(0, 255))}
-      face_db.append(new_face)
-      res.append(new_face["color"])
-  return zip(bboxes, res)
-
-process_camera_feed("videos/peopleTest.m4v")
+process_camera_feed("videos/ppl.mp4")
 # process_camera_feed("http://192.168.0.105:8080/video")
