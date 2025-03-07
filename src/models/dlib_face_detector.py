@@ -13,7 +13,7 @@ class DlibFaceDetector:
             box = self.get_bbox(det, frame.shape[1], frame.shape[0])
             if box is not None:
                 bboxes.append(box)
-        return bboxes
+        return detections, bboxes
 
     def get_bbox(self, detection, w, h):
         xmin, ymin, xmax, ymax = detection.left(), detection.top(), detection.right(), detection.bottom()
@@ -21,3 +21,4 @@ class DlibFaceDetector:
             return None
         
         return [xmin, ymin, xmax, ymax]
+    

@@ -24,7 +24,7 @@ class ThreadedCamera(Thread):
         self.capture.release()
 
     def read(self):
-        return self.ret, self.frame
+        return self.frame
 
     def stop(self):
         self.running = False

@@ -25,8 +25,7 @@ class MotionDetector(object):
 
     def detect_movement(self,frame, get_rects):
         # Calculate mean standard deviation then determine if motion has actually accurred
-        height, width, channels = frame.shape
-
+        height, width, _ = frame.shape
         occupied = False
         kernel = np.ones((5,5),np.uint8)
 

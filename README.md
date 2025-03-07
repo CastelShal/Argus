@@ -1,13 +1,14 @@
 ## Distinctions of modules
 
 ### Operational Modes:
-- Motion Detection
+- Motion Detection  (?)
 - Per-frame facial detection
 - BG subtraction + facial detection
 
 ### Pending Modules
-- Mode Select
+- [X] Refactor into nodal arrangement
 - Facial alignment pipeline
+- Mode Select
 - Facial data pipeline
 - Vector store index
 - Outward logging setup
