@@ -7,8 +7,8 @@
 
 ### Pending Modules
 - [X] Refactor into nodal arrangement
-- Facial alignment pipeline
-- Mode Select
+- [X] Facial alignment pipeline
+- [X] Mode Select
 - Facial data pipeline
 - Vector store index
 - Outward logging setup
