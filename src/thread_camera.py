@@ -10,6 +10,7 @@ class ThreadedCamera(Thread):
         self.ret = False
         self.running = True
         self.ready = False
+        self.daemon = True
         self.start()
 
     def run(self):

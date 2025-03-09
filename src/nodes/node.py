@@ -45,7 +45,7 @@ class Node:
                     
                     if result["score"] > .6:
                         x, y, r, b = bbox
-                        cv2.rectangle(frame, (x, y), (r, b), (]), 4)
+                        cv2.rectangle(frame, (x, y), (r, b), (0, 255, 0), 4)
                         print(f"Match found: {result["name"]} - score {result["score"]}")
                     else:
                         print("No match found. Highest candidate", result)
