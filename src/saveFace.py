@@ -34,7 +34,8 @@ for dir in dirs:
     for path in file_paths:
         img = cv2.imread(path)
         embedding = img_to_embedding(img)
-        res.append(embedding[0].tolist())
+        if embedding is not None:
+            res.append(embedding[0].tolist())
     training_df[dir] = res.copy()
     res.clear()
 
