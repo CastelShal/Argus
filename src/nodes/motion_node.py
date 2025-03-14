@@ -1,6 +1,6 @@
 import keras_facenet
 from thread_camera import ThreadedCamera
-from motion_detector import MotionDetector
+from models.motion_detector import MotionDetector
 from models.dlib_face_detector import DlibFaceDetector
 from utils.imgUtils import draw_rect
 import cv2

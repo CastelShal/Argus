@@ -9,11 +9,11 @@
 - [X] Refactor into nodal arrangement
 - [X] Facial alignment pipeline
 - [X] Mode Select
-- Facial data pipeline
-- Vector store index
+- [X] Facial data pipeline
+- [X] Vector store index
+- [X] Connection to frontend/UI
+- [X] Multi camera setup
 - Outward logging setup
-- Multi camera setup
 - Configuration management
-- Connection to frontend/UI
 
 Need more testing videos
