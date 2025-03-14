@@ -20,6 +20,7 @@ class StreamingNode:
         self.database = database
         self.unknown = 0
         self.streamThread = None
+        self.alert = False
     
     def process_capture(self):
         while not self.cap.ready:
@@ -66,7 +67,7 @@ class StreamingNode:
                     self.unknown = max(0, self.unknown - 1)
                 if self.unknown > 5:
                     print(f"-----UNKNOWN PEOPLE DETECTED ON {self.cname}")
-                    break
+                    self.alert = True
 
             self.processed = frame
 
