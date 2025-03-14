@@ -14,15 +14,18 @@ class ThreadedCamera(Thread):
         self.start()
 
     def run(self):
-        while self.running:
+        (self.ret, self.frame) = self.capture.read()
+        self.ready = True
+
+        while self.ret:
             if self.capture.isOpened():
                 (self.ret, self.frame) = self.capture.read()
-                self.ready = True
             else:
                 print("Camera failed to run")
                 break
             time.sleep(1/22)
         self.capture.release()
+        self.stop()
 
     def read(self):
         return self.frame

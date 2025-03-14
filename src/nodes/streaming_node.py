@@ -12,18 +12,22 @@ class StreamingNode:
         self.processed = None
         self.face_detector = DlibFaceDetector()
         self.embedder = keras_facenet.FaceNet()
+        self.embedder.embeddings([cv2.imread("training/seed.jpg")])
         self.cap = ThreadedCamera(capture)
         self.face_boxes = []
         self.face_chops = []
         self.cname = capture
         self.database = database
+        self.unknown = 0
+        self.streamThread = None
     
     def process_capture(self):
         while not self.cap.ready:
             pass    # Wait for the camera to start, TO-DO: Add a timeout
         while self.cap.running:
             frame = self.cap.read()
-            if frame is None: continue
+            if frame is None: break
+            frame = cv2.resize(frame, (800, 520))
             self.face_boxes.clear()
             detections, faces = self.face_detector.detectFaces(frame, 0.75)
             
@@ -39,38 +43,43 @@ class StreamingNode:
                 self.face_chops = align(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), detections)
                 embeddings = self.embedder.embeddings(self.face_chops)
                 
+                unknown_this_frame = False
                 for query, bbox in zip(embeddings, self.face_boxes):
                     result = self.database.cosine_similarity_search(query)
                     x, y, r, b = bbox
-                    if result["score"] > .8:
+                    if result["score"] > .5:
                         cv2.rectangle(frame, (x, y), (r, b), (0, 255, 0), 4)
                         cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
-                        print(f"Definite match found: {result["name"]} - score {result["score"]}")
+                        print(f"{self.cname}- Matched:{result["name"]}-{result["score"]}")
 
-                    elif result["score"] > .5 and result["score"] < .8:
-                        cv2.rectangle(frame, (x, y), (r, b), (0, 255, 255), 4)
-                        cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
-                        print(f"Unsure match found: {result["name"]} - score {result["score"]}")
+                    # elif result["score"] > .5 and result["score"] < .8:
+                    #     cv2.rectangle(frame, (x, y), (r, b), (0, 255, 255), 4)
+                    #     cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+                    #     print(f"Unsure match found: {result["name"]} - score {result["score"]}")
                         
                     else:
                         cv2.rectangle(frame, (x, y), (r, b), (255, 0, 0), 4)
-                        print("No match found. Highest candidate", result)
-            
+                        print(f"{self.cname}-No match: Nearest {result["name"]}-{result["score"]}")
+                        unknown_this_frame = True
+                        self.unknown += 1
+                if not unknown_this_frame:
+                    self.unknown = max(0, self.unknown - 1)
+                if self.unknown > 5:
+                    print(f"-----UNKNOWN PEOPLE DETECTED ON {self.cname}")
+                    break
+
             self.processed = frame
 
-        self.cap.stop()
-        cv2.destroyWindow(self.cname)
         print(f"Camera feed {self.cname} terminated.")
 
     def gen_frames(self):
-        while self.processed is None:
+        while not self.cap.ready:
             print("Waiting for camera to be ready...")
             pass  
-        while True:
-            frame = self.processed  # read the camera frame
+        while self.cap.running:
+            frame = self.processed #self.cap.read()  # read the camera frame
             if frame is None:
-                print("No frame captured")
-                continue
+                break
             frame = cv2.resize(frame, (640, 480))
             ret, buffer = cv2.imencode('.jpg', frame)
             if not ret:
@@ -81,3 +90,6 @@ class StreamingNode:
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             time.sleep(1/30)
+
+    def setStreamThread(self, thread):
+        self.streamThread = thread

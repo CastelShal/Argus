@@ -4,31 +4,32 @@ from thread_camera import ThreadedCamera
 from models.dlib_face_detector import DlibFaceDetector
 from utils.imgUtils import draw_rect
 from utils.face_aligner import align
-
+import time
 # Class that represents a processing node for a single camera (for now)
 # This class will handle face detection and face recognition
 class Node:
     def __init__(self, capture, database):
         self.face_detector = DlibFaceDetector()
         self.embedder = keras_facenet.FaceNet()
+        self.embedder.embeddings([cv2.imread("training/seed.jpg")])
         self.cap = ThreadedCamera(capture)
         self.face_boxes = []
         self.face_chops = []
         self.cname = capture
         self.database = database
+        self.unknown = 0
     
     def process_capture(self):
-        rand = 0
         while not self.cap.ready:
             pass    # Wait for the camera to start, TO-DO: Add a timeout
-        while True:
+        while self.cap.running:
             frame = self.cap.read()
-            if frame is None: continue
+            if frame is None: break
+            frame = cv2.resize(frame, (800, 520))
             self.face_boxes.clear()
             detections, faces = self.face_detector.detectFaces(frame, 0.75)
             
             if faces is not None and len(detections) > 0:
-                
                 for bbox in faces:
                     x0, y0, x1, y1 = bbox
                     rect = (x0, y0, x1, y1)   # Adjust the coordinates to the original frame
@@ -40,16 +41,30 @@ class Node:
                 self.face_chops = align(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), detections)
                 embeddings = self.embedder.embeddings(self.face_chops)
                 
+                unknown_this_frame = False
                 for query, bbox in zip(embeddings, self.face_boxes):
                     result = self.database.cosine_similarity_search(query)
-                    
-                    if result["score"] > .6:
-                        x, y, r, b = bbox
+                    x, y, r, b = bbox
+                    if result["score"] > .5:
                         cv2.rectangle(frame, (x, y), (r, b), (0, 255, 0), 4)
-                        print(f"Match found: {result["name"]} - score {result["score"]}")
+                        cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+                        print(f"{self.cname}- Matched:{result["name"]}-{result["score"]}")
+
+                    # elif result["score"] > .5 and result["score"] < .8:
+                    #     cv2.rectangle(frame, (x, y), (r, b), (0, 255, 255), 4)
+                    #     cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+                    #     print(f"Unsure match found: {result["name"]} - score {result["score"]}")
+                        
                     else:
-                        print("No match found. Highest candidate", result)
-            
+                        cv2.rectangle(frame, (x, y), (r, b), (255, 0, 0), 4)
+                        print(f"{self.cname}-No match: Nearest {result["name"]}-{result["score"]}")
+                        unknown_this_frame = True
+                        self.unknown += 1
+                if not unknown_this_frame:
+                    self.unknown = max(0, self.unknown - 1)
+                if self.unknown > 5:
+                    print(f"-----UNKNOWN PEOPLE DETECTED ON {self.cname}")
+                    break
             cv2.imshow(self.cname, frame)
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
