@@ -1,4 +1,7 @@
 argus_env
 src/training
 src/**/__pycache__
+src/logs/*
 training/*
+videos/*
+op.json

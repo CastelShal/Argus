@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Manage Nodes</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,6 +15,7 @@
         <form id="nodes-form" class="space-y-6">
             <div id="nodes-container" class="space-y-0">
                 <div class="node-group p-4">
+                    <input type="hidden" name="node_id[]" value="">
                     <div class="flex flex-col space-y-2">
                         <label for="node-name-1" class="text-gray-700 font-medium">Node Name:</label>
                         <input type="text" id="node-name-1" name="node_name[]" required
@@ -51,84 +55,166 @@
                 </button>
             </div>
         </form>
-    </div>
 
-    <script>
-        let nodeCount = 1;
-
-        function addNodeGroup() {
-            nodeCount++;
-            const container = document.getElementById("nodes-container");
-            const newNodeGroup = document.createElement("div");
-            newNodeGroup.classList.add("node-group", "p-4");
-            newNodeGroup.innerHTML = `
-                <div class="flex flex-col space-y-2">
-                    <label for="node-name-${nodeCount}" class="text-gray-700 font-medium">Node Name:</label>
-                    <input type="text" id="node-name-${nodeCount}" name="node_name[]" required
-                        class="w-3/4 px-4 py-2 border border-gray-300 rounded-lg bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="flex flex-col space-y-2 mt-4">
-                    <label for="node-url-${nodeCount}" class="text-gray-700 font-medium">Node URL:</label>
-                    <input type="text" id="node-url-${nodeCount}" name="node_url[]" required
-                        class="w-3/4 px-4 py-2 border border-gray-300 rounded-lg bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="flex items-center space-x-2 mt-4">
-                    <input type="checkbox" id="node-alerts-${nodeCount}" name="node_alerts[]" value="true"
-                        class="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
-                    <label for="node-alerts-${nodeCount}" class="text-gray-700 font-medium">Enable Alerts</label>
-                </div>
-                <div class="flex justify-end mt-4">
-                    <button type="button" onclick="removeNodeGroup(this)"
-                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">
-                        Remove Node
-                    </button>
-                </div>
-                <hr class="mt-6 border-gray-300">
-            `;
-            container.appendChild(newNodeGroup);
-        }
-
-        function removeNodeGroup(button) {
-            const nodeGroup = button.parentElement.parentElement;
-            nodeGroup.remove();
-        }
-
-        document.getElementById("nodes-form").addEventListener("submit", async function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const nodes = [];
-            const names = formData.getAll("node_name[]");
-            const urls = formData.getAll("node_url[]");
-            const alerts = formData.getAll("node_alerts[]");
-
-            for (let i = 0; i < names.length; i++) {
-                nodes.push({
-                    name: names[i],
-                    url: urls[i],
-                    alerts: alerts[i] === "true" ? true : false
-                });
-            }
-
-            try {
-                const response = await fetch("/add_nodes", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ nodes })
-                });
-
-                if (response.ok) {
-                    alert("Nodes added successfully!");
-                } else {
-                    const errorText = await response.text();
-                    alert(`Error: ${errorText}`);
+        <script>
+            // Add this before your other scripts
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
                 }
-            } catch (error) {
-                console.error("Error submitting form:", error);
-                alert("An error occurred while submitting the form.");
+            });
+        </script>
+
+        <script>
+            // Initialize with existing nodes data
+            const nodes = {{ nodes|tojson|safe }};
+            const container = document.getElementById("nodes-container");
+            
+            // Clear the default empty node
+            container.innerHTML = '';
+            
+            // Add existing nodes
+            nodes.forEach((node) => {
+                const nodeGroup = document.createElement("div");
+                nodeGroup.classList.add("node-group", "p-4");
+                nodeGroup.innerHTML = `
+                    <input type="hidden" name="node_id[]" value="${node.id || ''}">
+                    <div class="flex flex-col space-y-2">
+                        <label for="node-name-${node.id}" class="text-gray-700 font-medium">Node Name:</label>
+                        <input type="text" id="node-name-${node.id}" name="node_name[]" required
+                            value="${node.name || ''}"
+                            class="w-3/4 px-4 py-2 border border-gray-300 rounded-lg bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex flex-col space-y-2 mt-4">
+                        <label for="node-url-${node.id}" class="text-gray-700 font-medium">Node URL:</label>
+                        <input type="text" id="node-url-${node.id}" name="node_url[]" required
+                            value="${node.url || ''}"
+                            class="w-3/4 px-4 py-2 border border-gray-300 rounded-lg bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4">
+                        <input type="checkbox" id="node-alerts-${node.id}" name="node_alerts[]" value="true"
+                            ${node.alerts ? 'checked' : ''}
+                            class="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="node-alerts-${node.id}" class="text-gray-700 font-medium">Enable Alerts</label>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button type="button" onclick="removeNodeGroup(this)"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">
+                            Remove Node
+                        </button>
+                    </div>
+                    <hr class="mt-6 border-gray-300">
+                `;
+                container.appendChild(nodeGroup);
+            });
+        </script>
+
+        <script>
+            function addNodeGroup() {
+                const container = document.getElementById("nodes-container");
+                const newNodeGroup = document.createElement("div");
+                newNodeGroup.classList.add("node-group", "p-4");
+                newNodeGroup.innerHTML = `
+                    <input type="hidden" name="node_id[]" value="">
+                    <div class="flex flex-col space-y-2">
+                        <label for="node-name-" class="text-gray-700 font-medium">Node Name:</label>
+                        <input type="text" id="node-name-" name="node_name[]" required
+                            class="w-3/4 px-4 py-2 border border-gray-300 rounded-lg bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex flex-col space-y-2 mt-4">
+                        <label for="node-url-" class="text-gray-700 font-medium">Node URL:</label>
+                        <input type="text" id="node-url-" name="node_url[]" required
+                            class="w-3/4 px-4 py-2 border border-gray-300 rounded-lg bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4">
+                        <input type="checkbox" id="node-alerts-" name="node_alerts[]" value="true"
+                            class="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="node-alerts-" class="text-gray-700 font-medium">Enable Alerts</label>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button type="button" onclick="removeNodeGroup(this)"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">
+                            Remove Node
+                        </button>
+                    </div>
+                    <hr class="mt-6 border-gray-300">
+                `;
+                container.appendChild(newNodeGroup);
             }
-        });
-    </script>
+
+            function removeNodeGroup(button) {
+                const nodeGroup = button.parentElement.parentElement;
+                nodeGroup.remove();
+            }
+
+            document.getElementById("nodes-form").addEventListener("submit", async function(event) {
+                event.preventDefault();
+                
+                const modal = document.getElementById('progressModal');
+                modal.classList.remove('hidden');
+                
+                const formData = new FormData(event.target);
+                const nodes = [];
+                const ids = formData.getAll("node_id[]");
+                const names = formData.getAll("node_name[]");
+                const urls = formData.getAll("node_url[]");
+                
+                // Get all checkbox elements instead of form data
+                const alertCheckboxes = event.target.querySelectorAll('input[type="checkbox"][name="node_alerts[]"]');
+                const alerts = Array.from(alertCheckboxes).map(checkbox => checkbox.checked);
+
+                for (let i = 0; i < names.length; i++) {
+                    nodes.push({
+                        node_id: ids[i] || null,
+                        name: names[i],
+                        url: urls[i],
+                        alerts: alerts[i]
+                    });
+                }
+                console.log(ids, names, urls, alerts);
+                
+
+                try {
+                    const response = await fetch("/add_nodes", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ nodes })
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('progressMessage').textContent = 'Success! Redirecting...';
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1000);
+                    } else {
+                        const errorText = await response.text();
+                        modal.classList.add('hidden');
+                        alert(`Error: ${errorText}`);
+                    }
+                } catch (error) {
+                    console.error("Error submitting form:", error);
+                    modal.classList.add('hidden');
+                    alert("An error occurred while submitting the form.");
+                }
+            });
+        </script>
+
+        <!-- Progress Modal -->
+        <div id="progressModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div class="relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96">
+                <div class="relative bg-white rounded-lg shadow-lg px-8 py-6">
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Updating Nodes</h3>
+                        <p class="text-sm text-gray-500" id="progressMessage">Please wait while we process your changes...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

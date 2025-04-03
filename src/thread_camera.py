@@ -6,6 +6,7 @@ class ThreadedCamera(Thread):
     def __init__(self, src):
         super().__init__()
         self.capture = cv2.VideoCapture(src)
+        self.url = src
         self.frame = None
         self.ret = False
         self.running = True

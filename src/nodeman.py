@@ -8,16 +8,33 @@ class NodeManager:
         self.nodes = {}
         self.database = database
 
-    def add_node(self, url, name, alerts=False):
+    def add_node(self, url, name, alerts=False, node_id=None):
         """Add a new node with a unique ID and associated data."""
-        node_id = str(len(self.nodes) + 1)
+        nid = node_id or str(len(self.nodes) + 1)
         newNode = StreamingNode(url, self.database, name, alerts)
         stream_thread = threading.Thread(target=newNode.process_capture)
         stream_thread.daemon = True
         newNode.setStreamThread(stream_thread)
         stream_thread.start()
-        self.nodes[node_id] = newNode
+        self.nodes[nid] = newNode
         adminLogger.info(f"Node {node_id} added with URL: {url}")
+
+    def upsert_node(self, node_id, url, name, alerts=False):
+        """Update an existing node or add a new one if it doesn't exist."""
+        print(f"Node ID: {node_id}")
+        if node_id in self.nodes:
+            adminLogger.info(f"Updating node {node_id} with URL: {url}")
+            if self.nodes[node_id].cap.url != url:
+                self.remove_node(node_id)
+                self.add_node(url, name, alerts)
+            else:
+                self.nodes[node_id].cname = name
+                self.nodes[node_id].enableAlerts = alerts
+            self.nodes[node_id].cname = name
+            self.nodes[node_id].enableAlerts = alerts
+        else:
+            adminLogger.info(f"Adding new node {node_id} with URL: {url}")
+            self.add_node(url, name, alerts)
 
     def remove_node(self, node_id):
         """Remove an existing node by its ID."""
