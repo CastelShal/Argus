@@ -5,41 +5,59 @@ from models.dlib_face_detector import DlibFaceDetector
 from utils.imgUtils import draw_rect
 from utils.face_aligner import align
 import time
+import logging
+import numpy as np
+
+camLogger = logging.getLogger("CameraLogger")
+
+def create_end_frame():
+    frame = np.zeros((520, 800, 3), dtype=np.uint8)
+
+    text = "Camera feed ended"
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1.5
+    thickness = 3
+    text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+    text_x = (frame.shape[1] - text_size[0]) // 2
+    text_y = (frame.shape[0] + text_size[1]) // 2
+
+    cv2.putText(frame, text, (text_x, text_y), font, font_scale, (255, 255, 255), thickness)
+    _, buffer = cv2.imencode('.jpg', frame)
+    return buffer.tobytes()
+
 # Class that represents a processing node for a single camera (for now)
 # This class will handle face detection and face recognition
 class StreamingNode:
-    def __init__(self, capture, database):
+    def __init__(self, capture, database, name, alerts=False):
         self.processed = None
         self.face_detector = DlibFaceDetector()
         self.embedder = keras_facenet.FaceNet()
-        self.embedder.embeddings([cv2.imread("training/seed.jpg")])
+        self.embedder.embeddings([cv2.imread("training/seed.jpg")])     # Warm up the model 
         self.cap = ThreadedCamera(capture)
         self.face_boxes = []
         self.face_chops = []
-        self.cname = capture
+        self.cname = name or capture
         self.database = database
         self.unknown = 0
         self.streamThread = None
+        self.enableAlerts = alerts
         self.alert = False
     
     def process_capture(self):
         while not self.cap.ready:
-            pass    # Wait for the camera to start, TO-DO: Add a timeout
+            pass
         while self.cap.running:
             frame = self.cap.read()
             if frame is None: break
             frame = cv2.resize(frame, (800, 520))
             self.face_boxes.clear()
-            detections, faces = self.face_detector.detectFaces(frame, 0.75)
+            detections, faces = self.face_detector.detectFaces(frame)
             
             if faces is not None and len(detections) > 0:
                 for bbox in faces:
                     x0, y0, x1, y1 = bbox
                     rect = (x0, y0, x1, y1)   # Adjust the coordinates to the original frame
                     self.face_boxes.append(rect)
-
-                # for bbox in self.face_boxes:
-                #     draw_rect(frame, bbox)
                 
                 self.face_chops = align(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), detections)
                 embeddings = self.embedder.embeddings(self.face_chops)
@@ -51,26 +69,20 @@ class StreamingNode:
                     if result["score"] > .5:
                         cv2.rectangle(frame, (x, y), (r, b), (0, 255, 0), 4)
                         cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
-                        print(f"{self.cname}- Matched:{result["name"]}-{result["score"]}")
-
-                    # elif result["score"] > .5 and result["score"] < .8:
-                    #     cv2.rectangle(frame, (x, y), (r, b), (0, 255, 255), 4)
-                    #     cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
-                    #     print(f"Unsure match found: {result["name"]} - score {result["score"]}")
-                        
+                        camLogger.debug(f"{self.cname}- Matched:{result["name"]}-{result["score"]}")
                     else:
                         cv2.rectangle(frame, (x, y), (r, b), (255, 0, 0), 4)
-                        print(f"{self.cname}-No match: Nearest {result["name"]}-{result["score"]}")
+                        camLogger.debug(f"{self.cname}-No match: Nearest {result['name']}-{result['score']}")
                         unknown_this_frame = True
                         self.unknown += 1
+                        cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
                 if not unknown_this_frame:
-                    self.unknown = max(0, self.unknown - 1)
-                if self.unknown > 5:
-                    print(f"-----UNKNOWN PEOPLE DETECTED ON {self.cname}")
-                    self.alert = True
-
+                    self.unknown = max(0, self.unknown - 1)     # Avoids temporal artifacts causing false positives
+                if self.unknown > 5 and not self.alert:
+                    camLogger.warning(f"-----UNKNOWN PEOPLE DETECTED ON {self.cname}")
+                    if self.enableAlerts: self.alert = True
             self.processed = frame
-
         print(f"Camera feed {self.cname} terminated.")
 
     def gen_frames(self):
@@ -78,7 +90,7 @@ class StreamingNode:
             print("Waiting for camera to be ready...")
             pass  
         while self.cap.running:
-            frame = self.processed #self.cap.read()  # read the camera frame
+            frame = self.processed 
             if frame is None:
                 break
             frame = cv2.resize(frame, (640, 480))
@@ -91,6 +103,9 @@ class StreamingNode:
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             time.sleep(1/30)
+        yield (b'--frame\r\n' 
+            b'Content-Type: image/jpeg\r\n\r\n' + create_end_frame() + b'\r\n')
 
     def setStreamThread(self, thread):
         self.streamThread = thread
+ 

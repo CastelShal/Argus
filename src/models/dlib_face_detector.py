@@ -5,7 +5,7 @@ class DlibFaceDetector:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
 
-    def detectFaces(self, frame, threshold=0.7):
+    def detectFaces(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         detections = self.detector(gray, 1)
         bboxes = []

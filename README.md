@@ -17,3 +17,8 @@
 - Configuration management
 
 Need more testing videos
+
+Log: 
+    Finding known people with time 
+    Finding unknown people with time \/
+    Administrative activities from UI \/

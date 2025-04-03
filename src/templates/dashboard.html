@@ -3,12 +3,16 @@
         <h1 style="text-align: center; margin-top: 20px;">Live Video Feeds</h1>
         <div class="row" style="margin-top: 30px;">
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
-                {% for node_id in nodes %}
-                <div id="node-container-{{ node_id }}" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
-                    <h3 style="text-align: center;">Node {{ node_id }}</h3>
-                    <img src="{{ url_for('video_feed', node_id=node_id) }}" alt="Video Feed {{ node_id }}" 
-                         style="max-width: 100%; height: auto;" width="640" height="480">
-                    <p id="alert-{{ node_id }}" style="text-align: center; margin-top: 10px;">Alert Status: Checking...</p>
+                {% for node_id, node in nodes.items() %}
+                <div id="node-container-{{ node_id }}"
+                    style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                    <h3 style="text-align: center;">{{ node.cname }}</h3>
+                    <img src="{{ url_for('video_feed', node_id=node_id) }}" alt="Video Feed {{ node.cname }}"
+                        style="max-width: 100%; height: auto;" width="640" height="480">
+                    {% if node.enableAlerts %}
+                    <p id="alert-{{ node_id }}" style="text-align: center; margin-top: 10px;">Alert Status: Checking...
+                    </p>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -16,7 +20,7 @@
     </div>
     <script>
         function fetchAlerts() {
-            {% for node_id in nodes %}
+            {% for node_id, node in nodes.items() %}
             fetch("{{ url_for('alert_check', node_id=node_id) }}")
                 .then(response => response.text())
                 .then(alertStatus => {
@@ -37,7 +41,7 @@
                 });
             {% endfor %}
         }
-        setInterval(fetchAlerts, 5000); // Poll every 5 seconds
+        setInterval(fetchAlerts, 2000); // Poll every 2 seconds
         fetchAlerts(); // Initial fetch
     </script>
 </body>

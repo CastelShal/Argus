@@ -1,26 +1,28 @@
 from nodes.streaming_node import StreamingNode
 import threading
+import logging
 
+adminLogger = logging.getLogger("AdminLogger")
 class NodeManager:
     def __init__(self, database):
         self.nodes = {}
         self.database = database
 
-    def add_node(self, url):
+    def add_node(self, url, name, alerts=False):
         """Add a new node with a unique ID and associated data."""
         node_id = str(len(self.nodes) + 1)
-        newNode = StreamingNode(url, self.database)
+        newNode = StreamingNode(url, self.database, name, alerts)
         stream_thread = threading.Thread(target=newNode.process_capture)
         stream_thread.daemon = True
         newNode.setStreamThread(stream_thread)
         stream_thread.start()
-
         self.nodes[node_id] = newNode
+        adminLogger.info(f"Node {node_id} added with URL: {url}")
 
     def remove_node(self, node_id):
         """Remove an existing node by its ID."""
         if node_id not in self.nodes:
-            print(f"Node with ID {node_id} does not exist.")
+            adminLogger.warning(f"Node {node_id} not found for removal.")
             return 
         
         delNode = self.nodes[node_id]
@@ -42,8 +44,9 @@ class NodeManager:
         """Retrieve all nodes."""
         return self.nodes
     
-    def truncate(self):
+    def truncate(self, silent=False):
         """Remove all nodes."""
-        for node_id in list(self.nodes.keys()):
-            self.remove_node(node_id)
-        self.nodes.clear()
+        if len(self.nodes) > 0:
+            if not silent: adminLogger.info("Clearing all nodes.")
+            for node_id in list(self.nodes.keys()):
+                self.remove_node(node_id)
