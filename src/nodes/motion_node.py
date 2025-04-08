@@ -20,7 +20,7 @@ class MotionNode:
     
     def process_capture(self):
         while not self.cap.ready:
-            pass    # Wait for the camera to start, TO-DO: Add a timeout
+            pass
         while self.cap.running:
             frame = self.cap.read()
             

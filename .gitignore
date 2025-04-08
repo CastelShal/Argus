@@ -1,5 +1,5 @@
 argus_env
-src/training
+src/training/*
 src/**/__pycache__
 src/logs/*
 training/*

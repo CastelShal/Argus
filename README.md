@@ -1,9 +1,5 @@
-## Distinctions of modules
-
 ### Operational Modes:
-- Motion Detection  (?)
 - Per-frame facial detection
-- BG subtraction + facial detection
 
 ### Pending Modules
 - [X] Refactor into nodal arrangement
@@ -15,10 +11,3 @@
 - [X] Multi camera setup
 - Outward logging setup
 - Configuration management
-
-Need more testing videos
-
-Log: 
-    Finding known people with time 
-    Finding unknown people with time \/
-    Administrative activities from UI \/

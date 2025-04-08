@@ -3,7 +3,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 def setLoggers():
     camHandler = TimedRotatingFileHandler(
-        "src/logs/daily.log",
+        "logs/daily.log",
         when="midnight",
         interval=1
     )
@@ -16,7 +16,7 @@ def setLoggers():
     camLogger.setLevel(logging.INFO)
 
     adminLogger = logging.getLogger("AdminLogger")
-    adminHandler = logging.FileHandler("src/logs/admin.log")
+    adminHandler = logging.FileHandler("logs/admin.log")
 
     adminHandler.setFormatter(formatter)
     adminLogger.addHandler(adminHandler)

@@ -2,7 +2,6 @@ import cv2
 import keras_facenet
 from thread_camera import ThreadedCamera
 from models.dlib_face_detector import DlibFaceDetector
-from utils.imgUtils import draw_rect
 from utils.face_aligner import align
 import time
 import logging
@@ -29,36 +28,47 @@ def create_end_frame():
 # This class will handle face detection and face recognition
 class StreamingNode:
     def __init__(self, capture, database, name, alerts=False):
-        self.processed = None
+        # parameters and initialization
+        self.cap = ThreadedCamera(capture)
+        self.database = database
+        self.cname = name 
+        self.enableAlerts = alerts
         self.face_detector = DlibFaceDetector()
         self.embedder = keras_facenet.FaceNet()
-        self.embedder.embeddings([cv2.imread("training/seed.jpg")])     # Warm up the model 
-        self.cap = ThreadedCamera(capture)
+
+        # local data setup
         self.face_boxes = []
         self.face_chops = []
-        self.cname = name or capture
-        self.database = database
-        self.unknown = 0
-        self.streamThread = None
-        self.enableAlerts = alerts
         self.alert = False
+        self.unknown = 0
+        self.processed = None
+        self.streamThread = None
+        self.timer = time.time()
+        self.prev_found = set()
+        self.found = set()
     
     def process_capture(self):
+        self.embedder.embeddings([cv2.imread("training/seed.jpg")])     # Warm up the model 
         while not self.cap.ready:
             pass
         while self.cap.running:
             frame = self.cap.read()
             if frame is None: break
+
+            # Pre-processing
             frame = cv2.resize(frame, (800, 520))
             self.face_boxes.clear()
+
+            # Facial Detection
             detections, faces = self.face_detector.detectFaces(frame)
             
             if faces is not None and len(detections) > 0:
                 for bbox in faces:
                     x0, y0, x1, y1 = bbox
-                    rect = (x0, y0, x1, y1)   # Adjust the coordinates to the original frame
+                    rect = (x0, y0, x1, y1)
                     self.face_boxes.append(rect)
                 
+                # Facial Alignment and Embedding
                 self.face_chops = align(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), detections)
                 embeddings = self.embedder.embeddings(self.face_chops)
                 
@@ -70,6 +80,7 @@ class StreamingNode:
                         cv2.rectangle(frame, (x, y), (r, b), (0, 255, 0), 4)
                         cv2.putText(frame, result["name"], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
                         camLogger.debug(f"{self.cname}- Matched:{result["name"]}-{result["score"]}")
+                        self.found.add(result["name"])
                     else:
                         cv2.rectangle(frame, (x, y), (r, b), (255, 0, 0), 4)
                         camLogger.debug(f"{self.cname}-No match: Nearest {result['name']}-{result['score']}")
@@ -77,11 +88,25 @@ class StreamingNode:
                         self.unknown += 1
                         cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
+                # Logging processing
+                if (time.time() - self.timer) >= 1:
+                    if len(self.found) > 0:
+                        found_this_frame = self.found - self.prev_found
+                        print(self.found, self.prev_found, found_this_frame)
+                        if len(found_this_frame) > 0:
+                            camLogger.info(f"{self.cname} - Found: {", ".join(found_this_frame)}")
+
+                    self.prev_found = self.found.copy()
+                    self.found.clear()
+                    self.timer = time.time()
+
+                # Alert processing
                 if not unknown_this_frame:
-                    self.unknown = max(0, self.unknown - 1)     # Avoids temporal artifacts causing false positives
+                    self.unknown = max(0, self.unknown - 1)     # Avoids temporary artifacts causing false positives
                 if self.unknown > 5 and not self.alert:
-                    camLogger.warning(f"-----UNKNOWN PEOPLE DETECTED ON {self.cname}")
+                    camLogger.warning(f"-----UNKNOWN INDIVIDUALS DETECTED ON {self.cname}")
                     if self.enableAlerts: self.alert = True
+            
             self.processed = frame
         print(f"Camera feed {self.cname} terminated.")
 
@@ -99,7 +124,6 @@ class StreamingNode:
                 print("Failed to encode frame")
                 continue
             frame = buffer.tobytes()
-            # print("Frame sent")
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             time.sleep(1/30)

@@ -5,13 +5,6 @@ import numpy as np
 # logger = logging.getLogger(__name__)
 
 class MotionDetector(object):
-    """The MotionDetector Object recieves frames captured from 
-    an IPCamera object and generates a background model used 
-    as a reference frame. This background model is constructed 
-    using filtering and frame averaging. Once the model has been
-    created, consecutive frames are compared to the reference frame
-    and regions of interest are located"""
-
     def __init__(self):
         self.history = 0 # Keeps track of the number of frames that have been processed
         self.currentFrame = None  

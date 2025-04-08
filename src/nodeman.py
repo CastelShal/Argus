@@ -17,7 +17,7 @@ class NodeManager:
         newNode.setStreamThread(stream_thread)
         stream_thread.start()
         self.nodes[nid] = newNode
-        adminLogger.info(f"Node {node_id} added with URL: {url}")
+        adminLogger.info(f"Node {nid} added with URL: {url}")
 
     def upsert_node(self, node_id, url, name, alerts=False):
         """Update an existing node or add a new one if it doesn't exist."""
