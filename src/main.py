@@ -107,4 +107,4 @@ def config():
     ]
     return render_template("config.html", nodes=formatted_nodes)
 
-app.run()
+app.run(debug=True)

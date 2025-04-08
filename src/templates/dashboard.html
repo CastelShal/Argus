@@ -3,36 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Dashboard | Argus</title>
+    <script src="/static/tailwind.js"></script>
 </head>
-<body>
-    <nav style="display:flex; flex-direction: row; align-items: center; padding: 0">
-        <h2 style="margin-left: 20px">Argus</h2>
-        <ul style="margin-left: auto">
-            <li><a href="/" class="button">Home</a></li>
-            <li><a href="/config" class="button">Configuration</a></li>
-        </ul>
+<body class=bg-gradient-to-br from-blue-50 via-gray-100 to-gray-400 min-h-screen">
+    <nav class="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-50">
+        <div class="flex items-center justify-between max-w-7xl mx-auto relative">
+            <a href="/" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">
+                Argus
+            </a>
+            
+            <h1 class="absolute left-1/2 -translate-x-1/2 text-xl font-semibold text-slate-600">
+                Live Video Feeds
+            </h1>
+            
+            <ul class="flex space-x-3 z-10">
+                <li>
+                    <a href="/" class="inline-flex items-center px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200">
+                        <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <a href="/config" class="inline-flex items-center px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200">
+                        <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Configuration
+                    </a>
+                </li>
+            </ul>
+        </div>
     </nav>
-    <div class="container">
-        <h1 style="text-align: center; margin-top: 20px;">Live Video Feeds</h1>
-        <div class="row" style="margin-top: 30px;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
-                {% for node_id, node in nodes.items() %}
-                <div id="node-container-{{ node_id }}"
-                    style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
-                    <h3 style="text-align: center;">{{ node.cname }}</h3>
-                    <img src="{{ url_for('video_feed', node_id=node_id) }}" alt="Video Feed {{ node.cname }}"
-                        style="max-width: 100%; height: auto;" width="640" height="480">
-                    {% if node.enableAlerts %}
-                    <p id="alert-{{ node_id }}" style="text-align: center; margin-top: 10px;">Alert Status: Checking...
-                    </p>
-                    {% endif %}
+
+    <div class="container mx-auto p-6">
+        <div class="flex flex-wrap justify-center gap-6">
+            {% for node_id, node in nodes.items() %}
+            <div id="node-container-{{ node_id }}" 
+                class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-slate-300 flex-shrink-0">
+                <div class="p-4 border-b border-slate-100">
+                    <h3 class="text-lg font-medium text-slate-800">{{ node.cname }}</h3>
                 </div>
-                {% endfor %}
+                <div class="bg-slate-50 w-[640px]">
+                    <img src="{{ url_for('video_feed', node_id=node_id) }}" 
+                        alt="Video Feed {{ node.cname }}"
+                        width="640"
+                        height="480"
+                        class="block">
+                </div>
+                {% if node.enableAlerts %}
+                <div class="p-4 bg-slate-50">
+                    <p id="alert-{{ node_id }}" 
+                        class="text-sm font-medium text-slate-600">
+                        Alert Status: Checking...
+                    </p>
+                </div>
+                {% endif %}
             </div>
+            {% endfor %}
+            {% if not nodes %}
+            <div class="text-center p-8">
+                <p class="text-slate-600 text-lg">No video feeds available. Please check your configuration.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
+
     <script>
         function fetchAlerts() {
             {% for node_id, node in nodes.items() %}
@@ -43,20 +82,24 @@
                     const containerElement = document.getElementById("node-container-{{ node_id }}");
                     alertElement.innerText = "Alert Status: " + alertStatus;
                     if (alertStatus === "True") {
-                        containerElement.style.backgroundColor = "red";
+                        containerElement.classList.add('bg-red-300', 'border-red-500');
+                        containerElement.classList.remove('bg-white', 'border-slate-200');
                     } else {
-                        containerElement.style.backgroundColor = "white";
+                        containerElement.classList.remove('bg-red-300', 'border-red-500');
+                        containerElement.classList.add('bg-white', 'border-slate-200');
                     }
                 })
                 .catch(error => {
                     const alertElement = document.getElementById("alert-{{ node_id }}");
                     const containerElement = document.getElementById("node-container-{{ node_id }}");
                     alertElement.innerText = "Alert Status: Error fetching alert.";
-                    containerElement.style.backgroundColor = "white";
+                    containerElement.classList.remove('bg-red-100', 'border-red-500');
+                    containerElement.classList.add('bg-white', 'border-slate-200');
                 });
             {% endfor %}
         }
-        setInterval(fetchAlerts, 2000); // Poll every 2 seconds
-        fetchAlerts(); // Initial fetch
+        setInterval(fetchAlerts, 2000);
+        fetchAlerts();
     </script>
 </body>
+</html>

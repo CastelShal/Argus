@@ -1,44 +1,47 @@
-2025-04-08 18:46:39 - INFO - StreetCam - Found: mark
-2025-04-08 18:46:42 - INFO - StreetCam - Found: mark
-2025-04-08 18:46:43 - INFO - StreetCam - Found: mark, jude
-2025-04-08 18:46:44 - INFO - StreetCam - Found: jude, mark
-2025-04-08 18:46:46 - INFO - StreetCam - Found: mark
-2025-04-08 18:46:47 - INFO - StreetCam - Found: mark
-2025-04-08 18:46:48 - INFO - StreetCam - Found: mark
-2025-04-08 18:46:50 - INFO - StreetCam - Found: mark
-2025-04-08 18:46:51 - INFO - StreetCam - Found: mark, brandon, jude
-2025-04-08 18:46:52 - INFO - StreetCam - Found: brandon
-2025-04-08 18:46:53 - INFO - StreetCam - Found: brandon
-2025-04-08 18:46:54 - INFO - StreetCam - Found: brandon
-2025-04-08 18:46:55 - INFO - StreetCam - Found: brandon
-2025-04-08 18:46:56 - INFO - StreetCam - Found: brandon
-2025-04-08 18:46:57 - INFO - StreetCam - Found: brandon
-2025-04-08 18:46:59 - INFO - StreetCam - Found: mark, brandon
-2025-04-08 18:47:00 - INFO - StreetCam - Found: brandon
-2025-04-08 18:47:01 - INFO - StreetCam - Found: brandon
-2025-04-08 18:47:03 - INFO - StreetCam - Found: brandon
-2025-04-08 18:47:13 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
-2025-04-08 18:49:55 - INFO - StreetCam - Found: mark
-2025-04-08 18:49:58 - INFO - StreetCam - Found: mark
-2025-04-08 18:49:59 - INFO - StreetCam - Found: mark, jude
-2025-04-08 18:50:00 - INFO - StreetCam - Found: mark
-2025-04-08 18:50:01 - INFO - StreetCam - Found: mark
-2025-04-08 18:50:02 - INFO - StreetCam - Found: mark
-2025-04-08 18:50:03 - INFO - StreetCam - Found: mark
-2025-04-08 18:50:05 - INFO - StreetCam - Found: mark
-2025-04-08 18:50:07 - INFO - StreetCam - Found: mark, jude, brandon
-2025-04-08 18:50:08 - INFO - StreetCam - Found: brandon
-2025-04-08 18:50:09 - INFO - StreetCam - Found: brandon
-2025-04-08 18:50:10 - INFO - StreetCam - Found: brandon
-2025-04-08 18:50:11 - INFO - StreetCam - Found: brandon
-2025-04-08 18:50:12 - INFO - StreetCam - Found: brandon
-2025-04-08 18:51:12 - INFO - StreetCam - Found: mark
-2025-04-08 18:51:16 - INFO - StreetCam - Found: jude
-2025-04-08 18:51:23 - INFO - StreetCam - Found: jude, brandon
-2025-04-08 18:51:31 - INFO - StreetCam - Found: mark
-2025-04-08 18:51:46 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
-2025-04-08 18:54:48 - INFO - StreetCam - Found: mark
-2025-04-08 18:54:51 - INFO - StreetCam - Found: jude
-2025-04-08 18:54:59 - INFO - StreetCam - Found: brandon
-2025-04-08 18:55:07 - INFO - StreetCam - Found: mark
-2025-04-08 18:55:21 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 00:01:33 - INFO - Comp Lab - Found: Mark
+2025-04-09 00:01:37 - INFO - Comp Lab - Found: Jude
+2025-04-09 00:01:45 - INFO - Comp Lab - Found: Jude, Brandon
+2025-04-09 00:01:53 - INFO - Comp Lab - Found: Mark
+2025-04-09 00:02:08 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON Comp Lab
+2025-04-09 00:48:32 - INFO - Comp Lab - Found: Mark
+2025-04-09 00:48:35 - INFO - Comp Lab - Found: Jude
+2025-04-09 00:48:43 - INFO - Comp Lab - Found: Brandon
+2025-04-09 00:48:51 - INFO - Comp Lab - Found: Mark
+2025-04-09 01:07:47 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:07:58 - INFO - Comp Lab - Found: Mark
+2025-04-09 01:08:02 - INFO - Comp Lab - Found: Jude
+2025-04-09 01:08:09 - INFO - Comp Lab - Found: Brandon, Jude
+2025-04-09 01:08:16 - INFO - Comp Lab - Found: Mark
+2025-04-09 01:08:36 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON Comp Lab
+2025-04-09 01:15:33 - INFO - StreetCam - Found: Mark
+2025-04-09 01:15:37 - INFO - StreetCam - Found: Jude
+2025-04-09 01:15:45 - INFO - StreetCam - Found: Brandon, Jude
+2025-04-09 01:15:52 - INFO - StreetCam - Found: Mark
+2025-04-09 01:16:07 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:33:36 - INFO - StreetCam - Found: Mark
+2025-04-09 01:33:39 - INFO - StreetCam - Found: Jude
+2025-04-09 01:33:47 - INFO - StreetCam - Found: Brandon, Jude
+2025-04-09 01:33:55 - INFO - StreetCam - Found: Mark
+2025-04-09 01:34:14 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:34:24 - INFO - StreetCam - Found: Mark
+2025-04-09 01:34:26 - INFO - StreetCam - Found: Mark
+2025-04-09 01:34:28 - INFO - StreetCam - Found: Jude
+2025-04-09 01:34:29 - INFO - Lab camera - Found: Mark
+2025-04-09 01:34:36 - INFO - StreetCam - Found: Brandon
+2025-04-09 01:34:39 - INFO - StreetCam - Found: Brandon
+2025-04-09 01:34:41 - INFO - Lab camera - Found: Brandon
+2025-04-09 01:34:44 - INFO - StreetCam - Found: Mark
+2025-04-09 01:34:47 - INFO - StreetCam - Found: Mark
+2025-04-09 01:34:49 - INFO - Lab camera - Found: Mark
+2025-04-09 01:34:59 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:34:59 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:00 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:04 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:04 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON Lab camera
+2025-04-09 01:35:04 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:04 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:04 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:05 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:05 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:05 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam
+2025-04-09 01:35:05 - WARNING - -----UNKNOWN INDIVIDUALS DETECTED ON StreetCam

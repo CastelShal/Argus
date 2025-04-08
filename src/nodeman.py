@@ -17,13 +17,13 @@ class NodeManager:
         newNode.setStreamThread(stream_thread)
         stream_thread.start()
         self.nodes[nid] = newNode
-        adminLogger.info(f"Node {nid} added with URL: {url}")
+        adminLogger.info(f"Node Addition - ID: {nid}")
 
     def upsert_node(self, node_id, url, name, alerts=False):
         """Update an existing node or add a new one if it doesn't exist."""
         print(f"Node ID: {node_id}")
         if node_id in self.nodes:
-            adminLogger.info(f"Updating node {node_id} with URL: {url}")
+            adminLogger.info(f"Node Updated - ID: {node_id} with URL: {url}")
             if self.nodes[node_id].cap.url != url:
                 self.remove_node(node_id)
                 self.add_node(url, name, alerts)
@@ -33,7 +33,6 @@ class NodeManager:
             self.nodes[node_id].cname = name
             self.nodes[node_id].enableAlerts = alerts
         else:
-            adminLogger.info(f"Adding new node {node_id} with URL: {url}")
             self.add_node(url, name, alerts)
 
     def remove_node(self, node_id):

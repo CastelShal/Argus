@@ -6,10 +6,12 @@ from utils.face_aligner import align
 import time
 import logging
 import numpy as np
+from utils.sendMail import send_alert
 
 camLogger = logging.getLogger("CameraLogger")
 
 def create_end_frame():
+    ''' Creates a frame to be displayed when the camera feed ends '''
     frame = np.zeros((520, 800, 3), dtype=np.uint8)
 
     text = "Camera feed ended"
@@ -24,7 +26,7 @@ def create_end_frame():
     _, buffer = cv2.imencode('.jpg', frame)
     return buffer.tobytes()
 
-# Class that represents a processing node for a single camera (for now)
+# Class that represents a processing node for a single camera
 # This class will handle face detection and face recognition
 class StreamingNode:
     def __init__(self, capture, database, name, alerts=False):
@@ -35,6 +37,7 @@ class StreamingNode:
         self.enableAlerts = alerts
         self.face_detector = DlibFaceDetector()
         self.embedder = keras_facenet.FaceNet()
+        self.embedder.embeddings([cv2.imread("training/seed.jpg")])     # Warm up the model 
 
         # local data setup
         self.face_boxes = []
@@ -48,18 +51,17 @@ class StreamingNode:
         self.found = set()
     
     def process_capture(self):
-        self.embedder.embeddings([cv2.imread("training/seed.jpg")])     # Warm up the model 
         while not self.cap.ready:
             pass
         while self.cap.running:
             frame = self.cap.read()
             if frame is None: break
+            self.face_boxes.clear()
 
             # Pre-processing
             frame = cv2.resize(frame, (800, 520))
-            self.face_boxes.clear()
 
-            # Facial Detection
+            ##### Facial Detection ######
             detections, faces = self.face_detector.detectFaces(frame)
             
             if faces is not None and len(detections) > 0:
@@ -68,7 +70,7 @@ class StreamingNode:
                     rect = (x0, y0, x1, y1)
                     self.face_boxes.append(rect)
                 
-                # Facial Alignment and Embedding
+                ######  Facial Alignment and Embedding  #######
                 self.face_chops = align(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), detections)
                 embeddings = self.embedder.embeddings(self.face_chops)
                 
@@ -86,9 +88,8 @@ class StreamingNode:
                         camLogger.debug(f"{self.cname}-No match: Nearest {result['name']}-{result['score']}")
                         unknown_this_frame = True
                         self.unknown += 1
-                        cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-                # Logging processing
+                ######   Logging processing    #######
                 if (time.time() - self.timer) >= 1:
                     if len(self.found) > 0:
                         found_this_frame = self.found - self.prev_found
@@ -100,12 +101,14 @@ class StreamingNode:
                     self.found.clear()
                     self.timer = time.time()
 
-                # Alert processing
+                #####    Alert processing    #####
                 if not unknown_this_frame:
                     self.unknown = max(0, self.unknown - 1)     # Avoids temporary artifacts causing false positives
                 if self.unknown > 5 and not self.alert:
                     camLogger.warning(f"-----UNKNOWN INDIVIDUALS DETECTED ON {self.cname}")
-                    if self.enableAlerts: self.alert = True
+                    if self.enableAlerts: 
+                        self.alert = True
+                        send_alert(self.cname)
             
             self.processed = frame
         print(f"Camera feed {self.cname} terminated.")
