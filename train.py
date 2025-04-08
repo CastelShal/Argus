@@ -3,8 +3,8 @@ import cv2
 import pprint
 import json
 
-from models.dlib_face_detector import DlibFaceDetector
-from utils.face_aligner import align
+from src.models.dlib_face_detector import DlibFaceDetector
+from src.utils.face_aligner import align
 from keras_facenet import FaceNet
 
 embedder = FaceNet()
@@ -14,7 +14,7 @@ training_df = {}
 
 def img_to_embedding(frame):
     global face_detector
-    detections, faces = face_detector.detectFaces(frame, 0.75)
+    detections, faces = face_detector.detectFaces(frame)
     res = []
     if faces is not None:
         if len(detections) > 0:
@@ -23,7 +23,6 @@ def img_to_embedding(frame):
             detections)
             face = aligned_faces[0]
             if face is not None:
-                cv2.imshow("face", cv2.cvtColor(face, cv2.COLOR_RGB2BGR))   
                 return embedder.embeddings([face])
     return None
 for dir in dirs:
@@ -40,5 +39,5 @@ for dir in dirs:
     res.clear()
 
 pprint.PrettyPrinter().pprint(training_df)
-with open("op.json", "w") as file:
+with open("src/data/op.json", "w") as file:
     json.dump(training_df, file)
