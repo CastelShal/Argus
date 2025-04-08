@@ -15,7 +15,7 @@ smtpserver.login(mail, secret)
 
 def send_alert(node_name):
     sent_from = mail
-    sent_to = "castelshal@gmail.com"
+    sent_to = "kirtis2035@gmail.com"
     
     msg = MIMEMultipart('alternative')
     msg['Subject'] = "🚨 SECURITY ALERT - Unrecognized Individuals Detected"
@@ -50,5 +50,3 @@ def send_alert(node_name):
 
     html_part = MIMEText(html, 'html')
     msg.attach(html_part)
-
-    smtpserver.sendmail(sent_from, sent_to, msg.as_string())

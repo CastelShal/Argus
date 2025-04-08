@@ -9,7 +9,7 @@ import numpy as np
 from utils.sendMail import send_alert
 
 camLogger = logging.getLogger("CameraLogger")
-
+adminLogger = logging.getLogger("AdminLogger")
 def create_end_frame():
     ''' Creates a frame to be displayed when the camera feed ends '''
     frame = np.zeros((520, 800, 3), dtype=np.uint8)
@@ -93,7 +93,7 @@ class StreamingNode:
                 if (time.time() - self.timer) >= 1:
                     if len(self.found) > 0:
                         found_this_frame = self.found - self.prev_found
-                        print(self.found, self.prev_found, found_this_frame)
+                        # print(self.found, self.prev_found, found_this_frame)
                         if len(found_this_frame) > 0:
                             camLogger.info(f"{self.cname} - Found: {", ".join(found_this_frame)}")
 
@@ -111,11 +111,11 @@ class StreamingNode:
                         send_alert(self.cname)
             
             self.processed = frame
-        print(f"Camera feed {self.cname} terminated.")
+        (f"Camera feed {self.cname} terminated.")
 
     def gen_frames(self):
         while not self.cap.ready:
-            print("Waiting for camera to be ready...")
+            # print("Waiting for camera to be ready...")
             pass  
         while self.cap.running:
             frame = self.processed 
@@ -124,7 +124,7 @@ class StreamingNode:
             frame = cv2.resize(frame, (640, 480))
             ret, buffer = cv2.imencode('.jpg', frame)
             if not ret:
-                print("Failed to encode frame")
+                # print("Failed to encode frame")
                 continue
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
