@@ -1,48 +1,56 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
-import os
 import cv2
-# import pprint
 import json
-
-from models.dlib_face_detector import DlibFaceDetector
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
+from detector_modules.dlib_face_detector import DlibFaceDetector
 from utils.face_aligner import align
 from keras_facenet import FaceNet
 
-def img_to_embedding(frame):
-    face_detector = DlibFaceDetector()
+TRAINING_DIR="./training"
+
+face_detector = DlibFaceDetector()
+embedder = FaceNet(key="20180408-102900",cache_folder="./")
+training_df = {}
+
+# detect face and generate embedding
+def get_face_embedding(frame):
     detections, faces = face_detector.detectFaces(frame)
-    if faces is not None:
-        if len(detections) > 0:
-            aligned_faces = align(
-                cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), 
-                detections
-            )
-            face = aligned_faces[0]
-            if face is not None:
+    if faces is not None and len(detections) > 0:
+        aligned_faces = align(
+            cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), 
+            detections
+        )
+        face = aligned_faces[0]
+        if face is not None:
                 return embedder.embeddings([face])
     return None
 
-embedder = FaceNet()
-dirs = next(os.walk("./training"))[1]
-training_df = {}
-
-for dir in dirs:
-    dirpath = os.path.join("./training", dir)
+#   parse each dir seperately for image paths
+def get_image_paths(dir_name):
+    dirpath = os.path.join(TRAINING_DIR, dir_name)
     files = next(os.walk(dirpath))[2]
-    file_paths = [os.path.join("./training", dir, file) for file in files]
+    image_paths = [os.path.join(TRAINING_DIR, dir, file) for file in files]
+    return image_paths
+
+#   read from paths and get embeds
+def get_embeddings_from_images(image_paths):
     res = []
-    for path in file_paths:
+    for path in image_paths:
         img = cv2.imread(path)
-        embedding = img_to_embedding(img)
+        embedding = get_face_embedding(img)
         if embedding is not None:
             res.append(embedding[0].tolist())
-    
-    person_name = dir.capitalize()
-    training_df[person_name] = res.copy()
-    print(f"Added embeddings for {person_name}")
-    res.clear()
+    return res
 
-# pprint.PrettyPrinter().pprint(training_df)
+dirs = next(os.walk(TRAINING_DIR))[1]
+
+for dir_name in dirs:
+    image_paths = get_image_paths(dir_name)
+    embeddings = get_embeddings_from_images(image_paths)
+    face_name = dir_name.capitalize()
+    training_df[face_name] = embeddings.copy()
+    print(f"Added embeddings for {face_name}")
+
+#   convert to json
 with open("src/data/op.json", "w") as file:
     json.dump(training_df, file)

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Configuration Manager | Argus</title>
+    <script src="/static/tailwind.js"></script>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <nav class="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-50">
+        <div class="flex items-center justify-between max-w-7xl mx-auto relative">
+            <a href="/"
+                class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">
+                Argus
+            </a>
+            <h1 class="absolute left-1/2 -translate-x-1/2 text-xl font-semibold text-slate-600">
+                Manage Nodes
+            </h1>
+            <ul class="flex space-x-3 z-10">
+                <li>
+                    <a href="/"
+                        class="inline-flex items-center px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200">
+                        <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <a href="/dashboard"
+                        class="inline-flex items-center px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200">
+                        <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 10h11M9 21V3m0 0L3 10m6-7l6 7" />
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-gray-200 p-8">
+            <h2
+                class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 mb-8">
+                Manage Camera Nodes
+            </h2>
+
+            <form id="nodes-form" class="space-y-8">
+                <div id="nodes-container" class="space-y-6">
+                    <!-- Node groups will be added here -->
+                </div>
+                <button type="button" onclick="addNodeGroup()"
+                    class="w-full px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-lg shadow-md hover:shadow-lg border-2 border-blue-500/20 hover:-translate-y-0.5 active:translate-y-0">
+                    Add Camera Node
+                </button>
+
+                <div class="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
+                    <a href="/"
+                        class="px-5 py-2.5 text-gray-700 hover:text-gray-900 transition-all duration-200 rounded-lg hover:bg-gray-100 border-2 border-gray-300 hover:border-gray-400">
+                        ← Back
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-lg shadow-md hover:shadow-lg border-2 border-blue-500/20 hover:-translate-y-0.5 active:translate-y-0">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div id="progressModal" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm overflow-y-auto h-full w-full">
+        <div class="relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96">
+            <div class="relative bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border-2 border-gray-200 px-8 py-6">
+                <div class="text-center">
+                    <div class="mb-4">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Updating Nodes</h3>
+                    <p class="text-base text-gray-600" id="progressMessage">Please wait while we process your changes...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addNodeGroup() {
+            const container = document.getElementById("nodes-container");
+            const newNodeGroup = document.createElement("div");
+            newNodeGroup.classList.add("p-6", "bg-gray-50", "rounded-xl", "border-2", "border-gray-200", "shadow-md");
+            newNodeGroup.innerHTML = `
+            <input type="hidden" name="node_id[]" value="">
+            <div class="flex flex-col space-y-2">
+                <label class="text-gray-800 font-medium text-lg text-[1.2rem]">Node Name:</label>
+                <input type="text" name="node_name[]" required class="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base hover:border-gray-400"></div>
+            <div class="flex flex-col space-y-2 mt-4">
+                <label class="text-gray-800 font-medium text-lg text-[1.2rem]">Node URL:</label>
+                <input type="text" name="node_url[]" required class="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base hover:border-gray-400"></div>
+            <div class="flex items-center space-x-3 mt-6 p-4  rounded-lg bg-white">
+                <label class="relative inline-flex items-center cursor-pointer text-[1.2rem]">
+                    <input type="checkbox" name="node_alerts[]" value="true" class="sr-only peer">
+                    <div class="w-14 h-7 bg-gray-200 border-2 border-gray-300 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-cyan-600 peer-checked:border-blue-500 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all after:duration-300 after:border-2 after:border-gray-300"></div><span class="ml-3 text-lg font-medium text-gray-800">Enable Alerts</span>
+                </label>
+            </div>
+            <div class="flex justify-end mt-6 pt-4 border-gray-200">
+                <button type="button" onclick="removeNodeGroup(this)"
+                    class="px-4 py-2 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg focus:outline-none transition-all duration-200 text-base font-medium border-2 border-red-200 hover:border-red-300">
+                    Remove Node
+                </button>
+            </div>
+        `;
+            container.appendChild(newNodeGroup);
+        }
+
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+
+        const nodes = {{ nodes| tojson | safe }};
+        const container = document.getElementById("nodes-container");
+        container.innerHTML = '';
+
+        nodes.forEach((node) => {
+            const nodeGroup = document.createElement("div");
+            nodeGroup.classList.add("p-6", "bg-gray-50", "rounded-xl", "border-2", "border-gray-200", "shadow-md");
+            nodeGroup.innerHTML = `
+            <input type="hidden" name="node_id[]" value="${node.id || ''}">
+            <div class="flex flex-col space-y-2">
+                <label class="text-gray-800 font-medium text-lg">Node Name:</label>
+                <input type="text" name="node_name[]" required
+                    value="${node.name || ''}"
+                    class="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base hover:border-gray-400"></div>
+            <div class="flex flex-col space-y-2 mt-4">
+                <label class="text-gray-800 font-medium text-lg">Node URL:</label>
+                <input type="text" name="node_url[]" required
+                    value="${node.url || ''}"
+                    class="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base hover:border-gray-400"/>
+            </div>
+            <div class="flex items-center space-x-3 mt-6 p-4 border-2 border-gray-200 rounded-lg bg-white">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="node_alerts[]" value="true" class="sr-only peer" ${node.alerts ? 'checked' : ''}>
+                    <div class="w-14 h-7 bg-gray-200 border-2 border-gray-300 peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-cyan-600 peer-checked:border-blue-500 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all after:duration-300 after:border-2 after:border-gray-300"></div><span class="ml-3 text-lg font-medium text-gray-800">Enable Alerts</span>
+                </label>
+            </div>
+            <div class="flex justify-end mt-6 pt-4 border-t-2 border-gray-200">
+                <button type="button" onclick="removeNodeGroup(this)" class="px-4 py-2 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100  rounded-lg focus:outline-none transition-all duration-200 text-base font-medium border-2 border-red-200 hover:border-red-300">
+                    Remove Node
+                </button>
+            </div>
+        `;
+            container.appendChild(nodeGroup);
+        });
+
+        function removeNodeGroup(button) {
+            const nodeGroup = button.parentElement.parentElement;
+            nodeGroup.remove();
+        }
+
+        document.getElementById("nodes-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const modal = document.getElementById('progressModal');
+            modal.classList.remove('hidden');
+
+            const formData = new FormData(event.target);
+            const nodes = [];
+            const ids = formData.getAll("node_id[]");
+            const names = formData.getAll("node_name[]");
+            const urls = formData.getAll("node_url[]");
+
+            const alertCheckboxes = event.target.querySelectorAll('input[type="checkbox"][name="node_alerts[]"]');
+            const alerts = Array.from(alertCheckboxes).map(checkbox => checkbox.checked);
+
+            for (let i = 0; i < names.length; i++) {
+                nodes.push({
+                    node_id: ids[i] || null,
+                    name: names[i],
+                    url: urls[i],
+                    alerts: alerts[i]
+                });
+            }
+
+            try {
+                const response = await fetch("/add_nodes", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ nodes })
+                });
+
+                if (response.ok) {
+                    document.getElementById('progressMessage').textContent = 'Success! Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 3000);
+                } else {
+                    const errorText = await response.text();
+                    modal.classList.add('hidden');
+                    alert(`Error: ${errorText}`);
+                }
+            } catch (error) {
+                console.error("Error submitting form:", error);
+                modal.classList.add('hidden');
+                alert("An error occurred while submitting the form.");
+            }
+        });
+    </script>
+</body>
+
+</html>

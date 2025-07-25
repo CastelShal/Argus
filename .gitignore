@@ -1,8 +1,9 @@
-argus_env
+argus-env
 src/training/*
 src/**/__pycache__
-src/logs/*
-training/*
+logs/*
+training/**/
 videos/*
-op.json\
+src/data/op.json
+models/*
 .env

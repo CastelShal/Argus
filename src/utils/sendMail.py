@@ -15,10 +15,10 @@ smtpserver.login(mail, secret)
 
 def send_alert(node_name):
     sent_from = mail
-    sent_to = "kirtis2035@gmail.com"
+    sent_to = "castelshal@gmail.com"
     
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = "🚨 SECURITY ALERT - Unrecognized Individuals Detected"
+    msg['Subject'] = "SECURITY ALERT - Unrecognized Individuals Detected"
     msg['From'] = sent_from
     msg['To'] = sent_to
 
