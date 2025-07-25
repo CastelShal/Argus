@@ -1,13 +1,12 @@
 import cv2
 from detector_modules.facenet import get_embedder_instance
-import keras_facenet
 from thread_camera import ThreadedCamera
 from detector_modules.dlib_face_detector import DlibFaceDetector
 from utils.face_aligner import align
 import time
 import logging
 import numpy as np
-from utils.sendMail import send_alert
+# from utils.sendMail import send_alert
 
 camLogger = logging.getLogger("CameraLogger")
 adminLogger = logging.getLogger("AdminLogger")
@@ -106,7 +105,7 @@ class StreamingNode:
                     camLogger.warning(f"-----UNKNOWN INDIVIDUALS DETECTED ON {self.cname}")
                     if self.enableAlerts: 
                         self.alert = True
-                        send_alert(self.cname)
+                        # send_alert(self.cname)
             
             self.processed = frame
         (f"Camera feed {self.cname} terminated.")
