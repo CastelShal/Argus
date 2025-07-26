@@ -4,12 +4,11 @@ import json
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
 from detector_modules.dlib_face_detector import DlibFaceDetector
 from utils.face_aligner import align
-from keras_facenet import FaceNet
-
+from detector_modules.facenet import get_embedder_instance
 TRAINING_DIR="./training"
 
 face_detector = DlibFaceDetector()
-embedder = FaceNet(key="20180408-102900",cache_folder="./")
+embedder = get_embedder_instance()
 training_df = {}
 
 # detect face and generate embedding
@@ -29,7 +28,7 @@ def get_face_embedding(frame):
 def get_image_paths(dir_name):
     dirpath = os.path.join(TRAINING_DIR, dir_name)
     files = next(os.walk(dirpath))[2]
-    image_paths = [os.path.join(TRAINING_DIR, dir, file) for file in files]
+    image_paths = [os.path.join(dirpath, file) for file in files]
     return image_paths
 
 #   read from paths and get embeds

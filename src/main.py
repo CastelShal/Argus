@@ -15,4 +15,4 @@ vector_store.populate_database(data)
 
 node_manager = NodeManager(vector_store)
 app = setup_webapp(node_manager)
-app.run(debug=False)
+app.run(host="0.0.0.0", debug=False)
