@@ -1,20 +1,18 @@
 FROM python:3.10.18-bookworm AS builder
 WORKDIR /app
-
-#install cmake
-RUN apt-get update && apt-get install -y cmake && rm -rf /var/lib/apt/lists/*
+COPY ./ /app
 
 # replace opencv with the headless variant / avoids x11 conflicts
 RUN sed -i 's/opencv-python/opencv-python-headless/' requirements.txt
 RUN sed -i 's/opencv-contrib-python/opencv-contrib-python-headless/' requirements.txt
 
-#pip install
+#install cmake
+RUN apt-get update && apt-get install -y cmake && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-deps --no-cache -r requirements.txt
 
-# Build stage
+# Final image
 FROM python:3.10.18-slim
-
-# Install only necessary runtime libraries (based on ldd)
 RUN apt-get update && apt-get install -y --no-install-recommends \
 libx11-6 \
 libpng16-16 \
@@ -39,7 +37,5 @@ COPY --from=builder /usr/local/bin/ /usr/local/bin/
 COPY --from=builder /app /app
 
 WORKDIR /app
-
 EXPOSE 5000
-
 CMD python src/train.py ; exec python src/main.py
