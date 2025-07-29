@@ -25,7 +25,7 @@ jobs:
         password: ${{secrets.GITHUB_TOKEN}}
     - name: "Build Container Image"
       run: |
-        docker build . --tag ghcr.io/CastelShal/argus:latest
-        docker push ghcr.io/CastelShal/argus:latest
+        docker build . --tag ghcr.io/castelshal/argus:latest
+        docker push ghcr.io/castelshal/argus:latest
         
       
