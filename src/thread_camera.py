@@ -16,6 +16,9 @@ class ThreadedCamera(Thread):
 
     def run(self):
         (self.ret, self.frame) = self.capture.read()
+        if not self.ret:
+            print(f'Capture url {self.url} is invalid')
+            raise FileNotFoundError
         self.ready = True
 
         while self.ret:

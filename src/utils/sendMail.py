@@ -7,14 +7,16 @@ from email.mime.multipart import MIMEMultipart
 
 load_dotenv()
 
-mail = ''
+sender = os.getenv('GMAIL_MAIL_ID')
 secret = os.getenv('GMAIL_SECRET')
+recepient = os.getenv('EMAIL_RECEPIENT')
+
 smtpserver = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-smtpserver.login(mail, secret)
+smtpserver.login(sender, secret)
 
 def send_alert(node_name):
-    sent_from = mail
-    sent_to = ""
+    sent_from = sender
+    sent_to = recepient
     
     msg = MIMEMultipart('alternative')
     msg['Subject'] = "SECURITY ALERT - Unrecognized Individuals Detected"

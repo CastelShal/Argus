@@ -38,7 +38,10 @@ class NodeManager:
             self.nodes[node_id].enableAlerts = alerts
         
         else:
-            self.add_node(url, name, alerts)
+            try:
+                self.add_node(url, name, alerts)
+            except FileNotFoundError:
+                print(f'Cannot add node with url: ', url) 
 
     def remove_node(self, node_id):
         if node_id not in self.nodes:

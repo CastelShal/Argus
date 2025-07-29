@@ -75,7 +75,6 @@ def setup_webapp(node_manager):
                 name=node.get('name'),
                 alerts=node.get('alerts', False)
             )
-        
         return "Nodes updated successfully.", 200
 
     @app.route("/dashboard")

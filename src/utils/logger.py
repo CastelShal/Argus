@@ -1,5 +1,10 @@
+import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
+LOG_DIR = "logs"
+
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
 
 def setLoggers():
     camHandler = TimedRotatingFileHandler(
