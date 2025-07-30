@@ -3,3 +3,13 @@
 .git
 logs/
 Dockerfile
+docker-compose.yml
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.whl
+*.egg-info/
+.cache/
+.git/
+src/**/__pycache__

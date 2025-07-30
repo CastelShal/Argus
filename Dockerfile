@@ -9,7 +9,7 @@ RUN sed -i 's/opencv-contrib-python/opencv-contrib-python-headless/' requirement
 #install cmake
 RUN apt-get update && apt-get install -y cmake && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-deps --no-cache -r requirements.txt
+RUN pip install --no-deps --no-cache-dir -r requirements.txt
 
 # Final image
 FROM python:3.10.18-slim

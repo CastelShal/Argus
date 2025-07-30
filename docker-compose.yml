@@ -1,0 +1,7 @@
+name: Argus Surveillance
+services:
+  argus:
+    image: "ghcr.io/castelshal/argus:latest"
+    network_mode: "host"
+    volumes:
+      - <path-to-training-folder>:/app/training    # add :z to the end for SE Linux

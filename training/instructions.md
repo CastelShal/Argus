@@ -10,7 +10,7 @@ This guide will help you organize and prepare your image dataset for optimal per
 - **File Types:** Use standard image formats (e.g., `.jpg`, `.jpeg`, `.png`).
 - **Content:** Each image should clearly show the face of the person.
 - **Lighting:** Ensure good lighting to avoid shadows or overexposure.
-- **Quantity:** More images per person improve recognition accuracy. Aim for at least 5–10 images per individual.
+- **Quantity:** More images per person improve recognition accuracy. Aim for at least 2–5 images per individual.
 - Any files placed directly in the `training` directory (not inside a person's folder) will be ignored.
 
 ## Example
